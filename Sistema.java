@@ -62,7 +62,12 @@ public class Sistema {
         double[] z = gauss(mtx);
         //System.out.println(checkResults(mtx, z));
         //System.out.println(diff(x,z));
-        showResults(z, y, x);
+        if(checkResults(mtx, z) && checkResults(mtx, y) && checkResults(mtx, x)){
+            showResults(z, y, x);
+        }
+        else{
+            System.out.println("Erro. Algum dos métodos falhou :(");
+        }
         }
         catch(Exception e){
         System.err.println(e);
