@@ -60,6 +60,9 @@ public class Sistema {
         System.out.println(checkResults(mtx, x));
         System.out.println(checkResults(mtx, y));
         System.out.println(diff(x,y));
+
+        double[][] mtx2 = gauss(mtx);
+        //System.out.println(printMtx(mtx2));
         }
         catch(Exception e){
         System.err.println(e);
@@ -155,19 +158,33 @@ public class Sistema {
         return x;
     }
 
-    public double[] Gauss(double[][] mtx){
+    public double[][] gauss(double[][] mtx){
         int size = mtx.length;
-        double[] x = new double[size];
-        for(int i=0; i<size-1; i++){
-            for(int j=i; j<size; j++){
-
+        double[][] aux = new double[size][size+1];
+        for(int i=0; i<size; i++){
+            for(int j=0; j<size+1; j++){
+                aux[i][j] = mtx[i][j];
             }
         }
-        return x;
+        double[] x = new double[size];
+        double diagonal;
+        double factor;
+        for(int i=0; i<size-1; i++){
+            diagonal = aux[i][i];
+            for(int j=i+1; j<size; j++){
+                factor = - aux[j][i]/diagonal;
+                aux[j] = somaLinha(aux[j], aux[i], factor);
+            }
+        }
+        return aux;
     }
 
-    public double[] somaLinha(double[] l1, double[] l2, double fatorL2){
-        double[] x = new double[l1.length];
+    public double[] somaLinha(double[] l1, double[] l2, double factorL2){
+        int size = l1.length;
+        double[] x = new double[size];
+        for(int i=0; i<size; i++){
+            x[i] = l1[i] + l2[i] * factorL2;
+        }
         return x;
     }
 
