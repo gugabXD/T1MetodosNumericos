@@ -54,20 +54,74 @@ public class Sistema {
         double[][] mtx = initMatrix(variables.size());
         reader.close();
         //System.out.println(printMtx(mtx));
-        double[] x = Seidel(mtx);
-        double[] y = Jacobi(mtx);
-        //System.out.println(printVector(x));
-        System.out.println(checkResults(mtx, x));
-        System.out.println(checkResults(mtx, y));
-        System.out.println(diff(x,y));
-
+        double[] x = seidel(mtx);
+        double[] y = jacobi(mtx);
+        //System.out.println(checkResults(mtx, x));
+        //System.out.println(checkResults(mtx, y));
+        //System.out.println(diff(x,y));
         double[] z = gauss(mtx);
-        System.out.println(checkResults(mtx, z));
-        System.out.println(diff(x,z));
+        //System.out.println(checkResults(mtx, z));
+        //System.out.println(diff(x,z));
+        showResults(z, y, x);
         }
         catch(Exception e){
         System.err.println(e);
         }
+    }
+
+    public double[] analyseResults(double[] x){
+        int size = x.length;
+        double aux;
+        double minIndex=-1;
+        double maxIndex=-1;
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+        double[] results = new double[4];
+        for(int i=0; i<size; i++){
+            aux = x[i];
+            if(aux<min){
+                min = aux;
+                minIndex = i;
+            }
+            if(aux>max){
+                max = aux;
+                maxIndex = i;
+            }
+        }
+        results[0] = max;
+        results[1] = maxIndex;
+        results[2] = min;
+        results[3] = minIndex;
+        return results;
+    }
+
+    public void showResults(double[] x, double[] y, double[] z){
+        double[] results = analyseResults(x);
+        System.out.println("======================");
+        System.out.println("Resultados para o método de Gauss:");
+        System.out.println("Aeroporto de maior população: "+ variables.get((int)results[1]).getName()); 
+        System.out.println("Quantidade: "+results[0]);
+        System.out.println("Aeroporto de menor população: "+ variables.get((int)results[3]).getName()); 
+        System.out.println("Quantidade: "+results[2]);
+        System.out.println("======================");
+        System.out.println("\n");
+        results = analyseResults(y);
+        System.out.println("======================");
+        System.out.println("Resultados para o método de Jacobi:");
+        System.out.println("Aeroporto de maior população: "+ variables.get((int)results[1]).getName()); 
+        System.out.println("Quantidade: "+results[0]);
+        System.out.println("Aeroporto de menor população: "+ variables.get((int)results[3]).getName()); 
+        System.out.println("Quantidade: "+results[2]);
+        System.out.println("======================");
+        System.out.println("\n");
+        results = analyseResults(z);
+        System.out.println("======================");
+        System.out.println("Resultados para o método de Seidel:");
+        System.out.println("Aeroporto de maior população: "+ variables.get((int)results[1]).getName()); 
+        System.out.println("Quantidade: "+results[0]);
+        System.out.println("Aeroporto de menor população: "+ variables.get((int)results[3]).getName()); 
+        System.out.println("Quantidade: "+results[2]);
+        System.out.println("======================");
     }
 
     public double[][] initMatrix(int size){
@@ -108,7 +162,7 @@ public class Sistema {
         return s;
     }
 
-    public double[] Seidel(double[][] mtx){
+    public double[] seidel(double[][] mtx){
         int size = mtx.length;
         double[] x = new double[size];
         for(int i=0; i<size; i++){
@@ -131,7 +185,7 @@ public class Sistema {
         return x;
     }
 
-    public double[] Jacobi(double[][] mtx){
+    public double[] jacobi(double[][] mtx){
         int size = mtx.length;
         double[] x = new double[size];
         double[] y = new double[size];
