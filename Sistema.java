@@ -54,12 +54,21 @@ public class Sistema {
         double[][] mtx = initMatrix(variables.size());
         reader.close();
         //System.out.println(printMtx(mtx));
+        double t = System.nanoTime();
         double[] x = seidel(mtx);
+        double t2 = System.nanoTime();
+        System.out.println("Tempo para rodar o método de Siedel: "+(t2-t)/1e9+" segundos");
+        t = System.nanoTime();
         double[] y = jacobi(mtx);
+        t2 = System.nanoTime();
+        System.out.println("Tempo para rodar o método de Jacobi: "+(t2-t)/1e9+" segundos");
         //System.out.println(checkResults(mtx, x));
         //System.out.println(checkResults(mtx, y));
         //System.out.println(diff(x,y));
+        t = System.nanoTime();
         double[] z = gauss(mtx);
+        t2 = System.nanoTime();
+        System.out.println("Tempo para rodar o método de Gauss: "+(t2-t)/1e9+" segundos");
         //System.out.println(checkResults(mtx, z));
         //System.out.println(diff(x,z));
         if(checkResults(mtx, z) && checkResults(mtx, y) && checkResults(mtx, x)){
@@ -184,7 +193,7 @@ public class Sistema {
                     }
                 }
                 diff += Math.abs(x[i]-res);
-                x[i] = res;
+                x[i] = res/-mtx[i][i];
             }
         }
         return x;
@@ -212,7 +221,7 @@ public class Sistema {
                     }
                 }
                 diff += Math.abs(x[i]-res);
-                x[i] = res;
+                x[i] = res/-mtx[i][i];
             }
         }
         return x;
