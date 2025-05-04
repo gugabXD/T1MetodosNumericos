@@ -153,11 +153,22 @@ public class Sistema {
             double[] z = gauss(mtx);
             //System.out.println(checkResults(mtx, z));
             //System.out.println(diff(x,z));
+            double[] x = seidel(mtx);
+            double[] y = jacobi(mtx);
+            if(!checkResults(mtx, z) || !checkResults(mtx, y) || !checkResults(mtx, x)){
+                System.out.println("Erro. Algum dos métodos falhou :(");
+            }
             if(checkResults(mtx, z)){
                 showResultsSmaller(z);
             }
+            else if(checkResults(mtx, y)){
+                showResultsSmaller(y);
+            }
+            else if(checkResults(mtx, x)){
+                showResultsSmaller(x);
+            }
             else{
-                System.out.println("Erro. Falhou o método :(");
+                System.out.println("Erro. Nenhum método funcionou :(");
             }
             }
             catch(Exception e){
@@ -264,7 +275,7 @@ public class Sistema {
         for(int j = 0; j < mtx[i].length; j++){
             s += mtx[i][j] + " ";
         }
-        s += "\n";
+        s+= variables.get(i).getName() + "\n";
         }
         return s;
     }
