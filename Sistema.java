@@ -15,72 +15,154 @@ public class Sistema {
         cont = 0;
     }
     public void init(){
-        System.out.println("Por favor, indique o path do arquivo a ler:");
-        String path = in.nextLine();
+        System.out.println("Escolha uma opção:");
+        System.out.println("1. Executar um caso específico");
+        System.out.println("2. Executar todos os casos na pasta 'cases'");
+        int option = in.nextInt();
+        in.nextLine(); // Consume newline
+
+        if (option == 1) {
+            System.out.println("Por favor, indique o path do arquivo a ler:");
+            String path = in.nextLine();
+            readIndividual("cases/" + path);
+        } else if (option == 2) {
+            java.io.File folder = new java.io.File("cases");
+            java.io.File[] files = folder.listFiles((dir, name) -> name.endsWith(".txt"));
+            if (files != null) {
+            for (java.io.File file : files) {
+                System.out.println("Executando caso: " + file.getName());
+                read(file.getPath());
+            }
+            } else {
+            System.out.println("A pasta 'cases' está vazia ou não existe.");
+            }
+        } else {
+            System.out.println("Opção inválida.");
+        }
+    }
+
+    public void readIndividual(String path){
         try{
-        BufferedReader reader = new BufferedReader(new FileReader(path));
-        String line = reader.readLine();
-        while(line != null){
-            String[] parts = line.split(" ");
-            if(parts.length == 2){
-            String name = parts[0];
-            double value = Double.parseDouble(parts[1]);
-            Variable v = new Variable(name, value, cont);
-            cont++;
-            variables.add(v);
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            String line = reader.readLine();
+            while(line != null){
+                String[] parts = line.split(" ");
+                if(parts.length == 2){
+                String name = parts[0];
+                double value = Double.parseDouble(parts[1]);
+                Variable v = new Variable(name, value, cont);
+                cont++;
+                variables.add(v);
+                }
+                else{
+                String src = parts[0];
+                String dest = parts[1];
+                int rate = Integer.parseInt(parts[2]);
+                for (Variable v : variables) {
+                    if (v.getName().equals(dest)) {
+                    for (Variable w : variables) {
+                        if (w.getName().equals(src)) {
+                        int[] connection = {w.getIndex(), rate};
+                        if(w.getIndex()==v.getIndex()){
+                            System.out.println("Alerta!!!! retroalimentação inesperada");
+                        }
+                        if (!v.addConection(connection)) {
+                            System.out.println("Conexão já existente entre " + src + " e " + dest);
+                        }
+                        }
+                    }
+                    }
+                }
+                }
+                line = reader.readLine();
+            }
+            double[][] mtx = initMatrix(variables.size());
+            reader.close();
+            System.out.println(printMtx(mtx));
+            //System.out.println(printMtx(mtx));
+            double t = System.nanoTime();
+            double[] x = seidel(mtx);
+            double t2 = System.nanoTime();
+            System.out.println("Tempo para rodar o método de Siedel: "+(t2-t)/1e9+" segundos");
+            t = System.nanoTime();
+            double[] y = jacobi(mtx);
+            t2 = System.nanoTime();
+            System.out.println("Tempo para rodar o método de Jacobi: "+(t2-t)/1e9+" segundos");
+            //System.out.println(checkResults(mtx, x));
+            //System.out.println(checkResults(mtx, y));
+            //System.out.println(diff(x,y));
+            t = System.nanoTime();
+            double[] z = gauss(mtx);
+            t2 = System.nanoTime();
+            System.out.println("Tempo para rodar o método de Gauss: "+(t2-t)/1e9+" segundos");
+            //System.out.println(checkResults(mtx, z));
+            //System.out.println(diff(x,z));
+            if(checkResults(mtx, z) && checkResults(mtx, y) && checkResults(mtx, x)){
+                showResults(z, y, x);
             }
             else{
-            String src = parts[0];
-            String dest = parts[1];
-            int rate = Integer.parseInt(parts[2]);
-            for (Variable v : variables) {
-                if (v.getName().equals(src)) {
-                for (Variable w : variables) {
-                    if (w.getName().equals(dest)) {
-                    int[] connection = {w.getIndex(), rate};
-                    if(w.getIndex()==v.getIndex()){
-                        System.out.println("Alerta!!!! retroalimentação inesperada");
-                    }
-                    if (!v.addConection(connection)) {
-                        System.out.println("Conexão já existente entre " + src + " e " + dest);
+                System.out.println("Erro. Algum dos métodos falhou :(");
+            }
+            }
+            catch(Exception e){
+            System.err.println(e);
+            }
+    }
+
+    public void read(String path){
+        try{
+            variables.clear();
+            cont = 0;
+
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            String line = reader.readLine();
+            while(line != null){
+                String[] parts = line.split(" ");
+                if(parts.length == 2){
+                String name = parts[0];
+                double value = Double.parseDouble(parts[1]);
+                Variable v = new Variable(name, value, cont);
+                cont++;
+                variables.add(v);
+                }
+                else{
+                String src = parts[0];
+                String dest = parts[1];
+                int rate = Integer.parseInt(parts[2]);
+                for (Variable v : variables) {
+                    if (v.getName().equals(dest)) {
+                    for (Variable w : variables) {
+                        if (w.getName().equals(src)) {
+                        int[] connection = {w.getIndex(), rate};
+                        if(w.getIndex()==v.getIndex()){
+                            System.out.println("Alerta!!!! retroalimentação inesperada");
+                        }
+                        if (!v.addConection(connection)) {
+                            System.out.println("Conexão já existente entre " + src + " e " + dest);
+                        }
+                        }
                     }
                     }
                 }
                 }
+                line = reader.readLine();
+            }
+            double[][] mtx = initMatrix(variables.size());
+            reader.close();
+            //System.out.println(printMtx(mtx));
+            double[] z = gauss(mtx);
+            //System.out.println(checkResults(mtx, z));
+            //System.out.println(diff(x,z));
+            if(checkResults(mtx, z)){
+                showResultsSmaller(z);
+            }
+            else{
+                System.out.println("Erro. Falhou o método :(");
             }
             }
-            line = reader.readLine();
-        }
-        double[][] mtx = initMatrix(variables.size());
-        reader.close();
-        //System.out.println(printMtx(mtx));
-        double t = System.nanoTime();
-        double[] x = seidel(mtx);
-        double t2 = System.nanoTime();
-        System.out.println("Tempo para rodar o método de Siedel: "+(t2-t)/1e9+" segundos");
-        t = System.nanoTime();
-        double[] y = jacobi(mtx);
-        t2 = System.nanoTime();
-        System.out.println("Tempo para rodar o método de Jacobi: "+(t2-t)/1e9+" segundos");
-        //System.out.println(checkResults(mtx, x));
-        //System.out.println(checkResults(mtx, y));
-        //System.out.println(diff(x,y));
-        t = System.nanoTime();
-        double[] z = gauss(mtx);
-        t2 = System.nanoTime();
-        System.out.println("Tempo para rodar o método de Gauss: "+(t2-t)/1e9+" segundos");
-        //System.out.println(checkResults(mtx, z));
-        //System.out.println(diff(x,z));
-        if(checkResults(mtx, z) && checkResults(mtx, y) && checkResults(mtx, x)){
-            showResults(z, y, x);
-        }
-        else{
-            System.out.println("Erro. Algum dos métodos falhou :(");
-        }
-        }
-        catch(Exception e){
-        System.err.println(e);
-        }
+            catch(Exception e){
+            System.err.println(e);
+            }
     }
 
     public double[] analyseResults(double[] x){
@@ -107,6 +189,17 @@ public class Sistema {
         results[2] = min;
         results[3] = minIndex;
         return results;
+    }
+
+    
+
+    public void showResultsSmaller(double[] x){
+        double[] results = analyseResults(x);
+        System.out.print("Aeroporto de maior população: "+ variables.get((int)results[1]).getName()); 
+        System.out.println(" Quantidade: "+results[0]);
+        System.out.print("Aeroporto de menor população: "+ variables.get((int)results[3]).getName()); 
+        System.out.println(" Quantidade: "+results[2]);
+        System.out.println("\n");
     }
 
     public void showResults(double[] x, double[] y, double[] z){
